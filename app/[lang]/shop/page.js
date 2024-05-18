@@ -1,14 +1,15 @@
+import ShopFilter from "@/components/shop/ShopFilter";
+import ShopProductContainer from "@/components/shop/ShopProductContainer";
+import BreadCrumb from "@/components/ui/navigation/BreadCrumb";
+
 export default function ShopPage() {
   return (
-    <div>
-      <h1>Shop Page</h1>
-      <p>
-        {" "}
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia dolores
-        eos perferendis nesciunt recusandae alias hic quos optio ipsum placeat
-        eligendi consequatur illo nostrum, excepturi architecto minima
-        repellendus autem. Atque tempore consequatur quos.{" "}
-      </p>
-    </div>
+    <>
+      <BreadCrumb currentPage="Shop" />
+      <div class="container grid md:grid-cols-4 grid-cols-2 gap-6 pt-4 pb-16 items-start">
+        <ShopFilter />
+        <ShopProductContainer />
+      </div>
+    </>
   );
 }

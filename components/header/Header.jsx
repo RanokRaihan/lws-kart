@@ -56,7 +56,7 @@ const Header = () => {
             </div>
           </Link>
           <Link
-            href="#"
+            href="/account"
             className="text-center text-gray-700 hover:text-primary transition relative flex flex-col justify-center items-center"
           >
             <div className="text-xl">

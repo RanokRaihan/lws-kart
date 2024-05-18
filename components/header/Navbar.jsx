@@ -114,13 +114,13 @@ const Navbar = () => {
               Shop
             </Link>
             <Link
-              href="/aboutus"
+              href="/about"
               className="text-gray-200 hover:text-white transition"
             >
               About us
             </Link>
             <Link
-              href="/contactus"
+              href="/contact"
               className="text-gray-200 hover:text-white transition"
             >
               Contact us

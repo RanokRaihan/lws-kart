@@ -4,7 +4,7 @@ import Link from "next/link";
 const Promotion = () => {
   return (
     <div className="container pb-16 ">
-      <Link href="#">
+      <Link href="/product/664ea79cd38879aad0db506b">
         <Image
           src="/assets/images/offer.jpg"
           alt="ads"

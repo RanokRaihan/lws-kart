@@ -2,7 +2,6 @@ import { match } from "@formatjs/intl-localematcher";
 import Negotiator from "negotiator";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
 let locales = ["bn", "en"];
 let defaultLocale = "en";
 
@@ -13,11 +12,11 @@ const getLocale = (request) => {
   return match(language, locales, defaultLocale);
 };
 
-export function middleware(request) {
+export async function middleware(request) {
   const lang = cookies().get("lang");
-  // console.log(lang?.value);
 
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
+
   const pathnameHasLocal = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
@@ -27,12 +26,12 @@ export function middleware(request) {
   } else if (lang?.value) {
     const locale = lang?.value;
     return NextResponse.redirect(
-      new URL(`/${locale}/${pathname}`, request.url)
+      new URL(`/${lang}${pathname}${search}`, request.url)
     );
   } else {
     const locale = getLocale(request);
     return NextResponse.redirect(
-      new URL(`/${locale}/${pathname}`, request.url)
+      new URL(`/${locale}${pathname}${search}`, request.url)
     );
   }
 }

@@ -1,9 +1,42 @@
+"use client";
+
+import { SignInWithCredentials } from "@/actions";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
 const LoginForm = () => {
+  const [error, setError] = useState(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect_to = searchParams.get("redirect_to");
+
+  //form submit handler
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    // create new formData from login form
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const res = await SignInWithCredentials(formData);
+      if (!res.error) {
+        if (redirect_to) {
+          router.push(redirect_to);
+        } else {
+          router.push("/");
+        }
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
   return (
-    <form action="#" method="post" autoComplete="off">
+    <form autoComplete="off" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <div>
           <label htmlFor="email" className="text-gray-600 mb-2 block">
+            <span className="text-red-500" aria-hidden={true}>
+              *
+            </span>{" "}
             Email address
           </label>
           <input
@@ -12,10 +45,15 @@ const LoginForm = () => {
             id="email"
             className="block w-full border border-gray-300 px-4 py-3 text-gray-600 text-sm rounded focus:ring-0 focus:border-primary placeholder-gray-400"
             placeholder="youremail.@domain.com"
+            required
+            aria-required={true}
           />
         </div>
         <div>
           <label htmlFor="password" className="text-gray-600 mb-2 block">
+            <span className="text-red-500" aria-hidden={true}>
+              *
+            </span>{" "}
             Password
           </label>
           <input
@@ -24,9 +62,16 @@ const LoginForm = () => {
             id="password"
             className="block w-full border border-gray-300 px-4 py-3 text-gray-600 text-sm rounded focus:ring-0 focus:border-primary placeholder-gray-400"
             placeholder="*******"
+            required
+            aria-required={true}
           />
         </div>
       </div>
+
+      <div>
+        {error && <span className="text-sm text-red-500 ml-2">{error}</span>}
+      </div>
+
       <div className="flex items-center justify-between mt-6">
         <div className="flex items-center">
           <input

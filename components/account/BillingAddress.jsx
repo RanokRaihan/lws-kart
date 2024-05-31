@@ -1,20 +1,32 @@
+import { auth } from "@/auth";
+import { getUserInfo } from "@/database/userQuery";
 import Link from "next/link";
+import AddressCard from "./AddressCard";
 
-const BillingAddress = () => {
+const BillingAddress = async () => {
+  const session = await auth();
+  const { userInfo, error } =
+    (await getUserInfo(session?.user?.id || session?.user?._id)) || {};
+  const { firstName, lastName, street, city, postalCode, mobile } =
+    userInfo?.defaultBillingAddress || {};
   return (
     <div className="shadow rounded bg-white px-4 pt-6 pb-8">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-medium text-gray-800 text-lg">Billing address</h3>
-        <Link href="#" className="text-primary">
-          Edit
+        <Link href="/account/editaddress?type=billing" className="text-primary">
+          {userInfo?.defaultBillingAddress ? "Edit" : "Add"}
         </Link>
       </div>
-      <div className="space-y-1">
-        <h4 className="text-gray-700 font-medium">John Doe</h4>
-        <p className="text-gray-800">Medan, North Sumatera</p>
-        <p className="text-gray-800">20317</p>
-        <p className="text-gray-800">0811 8877 988</p>
-      </div>
+      {userInfo?.defaultBillingAddress ? (
+        <AddressCard addressInfo={userInfo?.defaultBillingAddress} />
+      ) : (
+        <div className="space-y-1">
+          <p className="text-gray-400">
+            No default billing address available. please click the `add` button
+            to add one.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

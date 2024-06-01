@@ -18,6 +18,9 @@ cloudinary.config({
 export async function signInWithGoogle() {
   await signIn("google", { callbackUrl: "http://localhost:3000" });
 }
+export async function signInWithGithub() {
+  await signIn("github", { callbackUrl: "http://localhost:3000" });
+}
 export async function signOutAction() {
   await signOut({ callbackUrl: "http://localhost:3000" });
 }
@@ -67,14 +70,17 @@ export async function SignUpAction(prevState, formData) {
     if (!newUserRespone) {
       throw new Error("User creation failed!");
     }
-    return {
-      data: {
-        name: newUserRespone?.name,
-        email: newUserRespone?.email,
-        image: newUserRespone?.image,
-      },
-      message: "User created successfuly",
-    };
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: "http://localhost:3000",
+    });
+    if (result.error) {
+      throw new Error(result.error);
+    }
+    return result;
   } catch (error) {
     return {
       error: {
@@ -125,7 +131,13 @@ export async function createCategory(formData) {
 */
 
 export async function updateUser(formData) {
+  //data checker
+  const isValidDate = (dateString) => {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime()) ? date : undefined;
+  };
   const { id, name, mobile, image, dob } = Object.fromEntries(formData);
+  console.log({ id, name, mobile, image, dob });
 
   let imageLink = undefined;
   try {
@@ -151,7 +163,7 @@ export async function updateUser(formData) {
     const updatedUser = await User.findByIdAndUpdate(id, {
       name,
       mobile,
-      dob,
+      dob: isValidDate(dob),
       image: imageLink,
     })
       .select("-password")
@@ -198,7 +210,6 @@ export async function updateUserAddress(formData) {
       return { success: true };
     }
   } catch (error) {
-    console.log(error);
     return { error: error.message };
   }
 }

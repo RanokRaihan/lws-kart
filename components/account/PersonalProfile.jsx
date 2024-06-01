@@ -4,7 +4,6 @@ import Link from "next/link";
 
 const PersonalProfile = async () => {
   const session = await auth();
-  console.log(session?.user);
   const { userInfo, error } = await getUserInfo(
     session?.user?.id || session?.user?._id
   );

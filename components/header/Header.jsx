@@ -12,7 +12,6 @@ import Searchbar from "./Searchbar";
 const Header = async () => {
   const session = await auth();
   const wishlistItems = await getWishListItems();
-  console.log(wishlistItems);
 
   return (
     <header className="py-4 shadow-sm bg-white">

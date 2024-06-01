@@ -1,14 +1,14 @@
-import { signInWithGoogle } from "@/actions";
+import { signInWithGithub, signInWithGoogle } from "@/actions";
 
 const LoginWithButtons = () => {
   return (
     <div className="mt-4 flex justify-between gap-4">
-      <form action="" className="w-1/2">
+      <form action={signInWithGithub} className="w-1/2">
         <button
           type="submit"
-          className="w-full py-2 text-center text-white bg-blue-800 rounded uppercase font-roboto font-medium text-sm hover:bg-blue-700"
+          className="w-full py-2 text-center text-white bg-black rounded uppercase font-roboto font-medium text-sm hover:bg-slate-700"
         >
-          facebook
+          github
         </button>
       </form>
       <form action={signInWithGoogle} className="w-1/2">

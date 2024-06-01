@@ -7,11 +7,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import Loader from "../ui/Loader";
 
 const EditAccountForm = ({ userInfo }) => {
   const { name, mobile, dob, _id } = userInfo || {};
   const [serverError, setServerError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
   useEffect(() => {
@@ -37,12 +39,14 @@ const EditAccountForm = ({ userInfo }) => {
     resolver: zodResolver(updateUserSchema),
   });
 
+  console.log(isLoading);
   useEffect(() => {
     register("image"); // Manually register the image input
   }, [register]);
 
   // submit the form
   const onSubmit = async (data) => {
+    setIsLoading(true);
     const { name, mobile, image, dob } = data;
     const formData = new FormData();
     formData.append("id", _id?.toString());
@@ -50,7 +54,9 @@ const EditAccountForm = ({ userInfo }) => {
     image && formData.append("image", image);
     dob && formData.append("dob", dob);
     mobile && formData.append("mobile", mobile);
+
     const response = await updateUser(formData);
+    setIsLoading(false);
     if (response?.error) {
       setServerError(response.error);
     }
@@ -154,9 +160,16 @@ const EditAccountForm = ({ userInfo }) => {
       <div className="flex items-center justify-between">
         <button
           type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          disabled={isLoading}
+          className="bg-blue-500 w-full hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline relative"
         >
-          Update
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <span className={isLoading ? "opacity-0" : "opacity-100"}>
+              Update
+            </span>
+          )}
         </button>
       </div>
     </form>

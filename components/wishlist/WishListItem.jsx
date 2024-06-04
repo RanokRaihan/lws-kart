@@ -1,10 +1,12 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { auth } from "@/auth";
 import Image from "next/image";
 import Link from "next/link";
+import CartButton from "../productDetails/CartButton";
 import Stock from "../productDetails/Stock";
+import DeleteButton from "./DeleteButton";
 
-const WishListItem = ({ item }) => {
+const WishListItem = async ({ item }) => {
+  const session = await auth();
   const { id, name, price, discount, rating, ratedUser, images, stock } =
     item || {};
   return (
@@ -19,7 +21,9 @@ const WishListItem = ({ item }) => {
         />
       </div>
       <div className="w-1/3">
-        <h2 className="text-gray-800 text-xl font-medium uppercase">{name}</h2>
+        <h2 className="text-gray-800 text-xl font-medium uppercase">
+          <Link href={`/product/${id}`}> {name}</Link>
+        </h2>
         <p className="text-gray-500 text-sm">
           Availability: <Stock stock={stock} />
         </p>
@@ -30,16 +34,12 @@ const WishListItem = ({ item }) => {
         </p>
         <p className="text-sm text-gray-400 line-through">${price}</p>
       </div>
-      <Link
-        href="#"
-        className="px-6 py-2 text-center text-sm text-white bg-primary border border-primary rounded hover:bg-transparent hover:text-primary transition uppercase font-roboto font-medium"
-      >
-        add to cart
-      </Link>
+      <CartButton session={session} productId={id} />
 
-      <div className="text-gray-600 cursor-pointer hover:text-primary">
-        <FontAwesomeIcon icon={faTrash} className="size-6" />
-      </div>
+      <DeleteButton
+        userId={session?.user?.id || session?.user?._id}
+        productId={id}
+      />
     </div>
   );
 };

@@ -273,6 +273,7 @@ export async function toggleWishList(userId, productId) {
 
     // Save the updated wishlist
     await wishlist.save();
+    revalidatePath("/[slug]/wishlist", "page");
     return JSON.stringify({
       success: true,
       task: itemIndex === -1 ? "add" : "remove",

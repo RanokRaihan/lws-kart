@@ -13,14 +13,21 @@ const ShopProductContainer = async ({ searchParams }) => {
   return (
     <div className="col-span-3">
       <div className="grid md:grid-cols-3 grid-cols-2 gap-6">
-        {data &&
+        {data && data?.length > 0 ? (
           data.map((product) => (
             <ProductCard
               key={product?._id?.toString()}
               product={product}
               wishlist={wishlist}
             />
-          ))}
+          ))
+        ) : (
+          <div>
+            <p className="text-6xl text-gray-400 text-center">
+              No product matched
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

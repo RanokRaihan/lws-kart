@@ -3,10 +3,14 @@ import ProductDetailsContainer from "@/components/productDetails/ProductDetailsC
 import RelatedProducts from "@/components/productDetails/RelatedProducts";
 import BreadCrumb from "@/components/ui/navigation/BreadCrumb";
 import { getSingleProduct } from "@/database/productQuery";
+import { notFound } from "next/navigation";
 
 export default async function ProductDetailsPage({ params }) {
   const { id } = params || {};
   const res = await getSingleProduct(id);
+  if (!res?.data) {
+    notFound();
+  }
 
   return (
     <>

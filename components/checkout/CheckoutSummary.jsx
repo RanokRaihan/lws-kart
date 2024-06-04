@@ -29,6 +29,11 @@ const CheckoutSummary = async () => {
         <p className="font-semibold">Total</p>
         <p>${calculateTotalCartPrice(cartItems)}</p>
       </div>
+      <div>
+        <p className="italic text-gray-400 text-sm">
+          Only cash on delivery available
+        </p>
+      </div>
     </div>
   );
 };

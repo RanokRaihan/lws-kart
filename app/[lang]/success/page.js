@@ -4,7 +4,7 @@ export default function SuccessPage() {
   return (
     <div className="min-h-[40vh] flex flex-col gap-4 items-center justify-center">
       <h1 className="text-6xl text-center text-green-500">
-        Order placed sauccessfully
+        Order placed successfuly
       </h1>
       <Link
         href="/shop"

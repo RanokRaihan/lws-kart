@@ -22,13 +22,14 @@ const Searchbar = () => {
     },
     [searchParams]
   );
-  const handleSearch = () => {
+  const handleSearch = (e) => {
+    e.preventDefault();
     if (searchText.trim()) {
       router.push("/shop?" + createQueryString("search", searchText));
     }
   };
   return (
-    <div className="w-full max-w-xl relative flex ">
+    <form onSubmit={handleSearch} className="w-full max-w-xl relative flex ">
       <span className="absolute left-4 top-3 text-lg text-gray-400">
         <FontAwesomeIcon icon={faMagnifyingGlass} className="size-6" />
       </span>
@@ -42,12 +43,12 @@ const Searchbar = () => {
         placeholder="search"
       />
       <button
-        onClick={handleSearch}
+        type="submit"
         className="bg-primary border border-primary text-white px-8 rounded-r-md hover:bg-transparent hover:text-primary transition hidden md:flex items-center"
       >
         Search
       </button>
-    </div>
+    </form>
   );
 };
 

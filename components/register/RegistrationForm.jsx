@@ -1,6 +1,9 @@
 "use client";
 import { SignUpAction } from "@/actions";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { useEffect } from "react";
 import { useFormState } from "react-dom";
 const initailState = {
   data: null,
@@ -8,7 +11,19 @@ const initailState = {
 };
 const RegistrationForm = () => {
   const [state, formAction] = useFormState(SignUpAction, initailState);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect_to = searchParams.get("redirect_to");
 
+  useEffect(() => {
+    if (state?.data) {
+      if (redirect_to) {
+        router.push(redirect_to);
+      } else {
+        router.push("/");
+      }
+    }
+  }, [redirect_to, router, state?.data]);
   return (
     <form action={formAction} autoComplete="off">
       <div className="space-y-2">

@@ -1,8 +1,6 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
-
+import mongoose, { Schema, models } from "mongoose";
 // Define the schema for the wishlist
-const WishlistSchema = new Schema(
+const wishlistSchema = new mongoose.Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -22,7 +20,6 @@ const WishlistSchema = new Schema(
 );
 
 // Create the Wishlist model from the schema
-const Wishlist =
-  mongoose.models.Wishlist || mongoose.model("Wishlist", WishlistSchema);
+const Wishlist = models.Wishlist || mongoose.model("Wishlist", wishlistSchema);
 
-module.exports = Wishlist;
+export default Wishlist;

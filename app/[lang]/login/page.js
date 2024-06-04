@@ -5,7 +5,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }) {
+  const { redirect_to } = searchParams;
   const session = await auth();
   if (session?.user) {
     redirect("/");
@@ -30,7 +31,12 @@ export default async function LoginPage() {
 
         <p className="mt-4 text-center text-gray-600">
           Don&apos;t have account?{" "}
-          <Link href="/register" className="text-primary">
+          <Link
+            href={`/register${
+              redirect_to ? "?redirect_to=" + redirect_to : ""
+            }`}
+            className="text-primary"
+          >
             Register now
           </Link>
         </p>

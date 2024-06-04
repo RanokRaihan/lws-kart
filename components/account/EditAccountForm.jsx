@@ -39,7 +39,6 @@ const EditAccountForm = ({ userInfo }) => {
     resolver: zodResolver(updateUserSchema),
   });
 
-  console.log(isLoading);
   useEffect(() => {
     register("image"); // Manually register the image input
   }, [register]);

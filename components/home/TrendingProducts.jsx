@@ -1,8 +1,11 @@
+import { getUserWishList } from "@/actions";
 import { getTrendingProducts } from "@/database/productQuery";
 import ProductCard from "../ui/cards/ProductCard";
 
 const TrendingProducts = async () => {
   const { data: trending } = await getTrendingProducts();
+  const { wishlistItems } = await getUserWishList();
+  const wishlist = wishlistItems?.map((item) => item?.id);
   return (
     <div className="container pb-16">
       <h2 className="text-2xl font-medium text-gray-800 uppercase mb-6">
@@ -12,7 +15,11 @@ const TrendingProducts = async () => {
         {trending &&
           trending?.length > 0 &&
           trending.map((product) => (
-            <ProductCard key={product?._id?.toString()} product={product} />
+            <ProductCard
+              key={product?._id?.toString()}
+              product={product}
+              wishlist={wishlist}
+            />
           ))}
       </div>
     </div>

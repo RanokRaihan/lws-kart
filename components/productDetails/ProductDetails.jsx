@@ -1,18 +1,20 @@
+import { getUserWishList } from "@/actions";
+import { auth } from "@/auth";
+import { checkIsFavourite } from "@/lib/isFavourite";
 import {
   faFacebookF,
   faInstagram,
   faTwitter,
 } from "@fortawesome/free-brands-svg-icons";
-import {
-  faBagShopping,
-  faHeart,
-  faStar,
-} from "@fortawesome/free-solid-svg-icons";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import CartButton from "./CartButton";
 import Stock from "./Stock";
+import WishlistButton from "./WishlistButton";
 
-const ProductDetails = ({ product }) => {
+const ProductDetails = async ({ product }) => {
   const {
+    _id,
     name,
     description,
     stock,
@@ -23,6 +25,9 @@ const ProductDetails = ({ product }) => {
     rating,
     ratedUser,
   } = product || {};
+  const session = await auth();
+  const { wishlistItems } = await getUserWishList();
+  const wishlist = wishlistItems?.map((item) => item?.id);
   return (
     <div>
       <h2 className="text-3xl font-medium uppercase mb-2">{name}</h2>
@@ -66,7 +71,7 @@ const ProductDetails = ({ product }) => {
 
       <div className="mt-4">
         <h3 className="text-sm text-gray-800 uppercase mb-1">Quantity</h3>
-        <div className="flex border border-gray-300 text-gray-600 divide-x divide-gray-300 w-max">
+        {/* <div className="flex border border-gray-300 text-gray-600 divide-x divide-gray-300 w-max">
           <div className="h-8 w-8 text-xl flex items-center justify-center cursor-pointer select-none">
             -
           </div>
@@ -76,23 +81,16 @@ const ProductDetails = ({ product }) => {
           <div className="h-8 w-8 text-xl flex items-center justify-center cursor-pointer select-none">
             +
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="mt-6 flex gap-3 border-b border-gray-200 pb-5 pt-5">
-        <a
-          href="#"
-          className="bg-primary border border-primary text-white px-8 py-2 font-medium rounded uppercase flex items-center gap-2 hover:bg-transparent hover:text-primary transition"
-        >
-          <FontAwesomeIcon icon={faBagShopping} className="size-5" /> Add to
-          cart
-        </a>
-        <a
-          href="#"
-          className="border border-gray-300 text-gray-600 px-8 py-2 font-medium rounded uppercase flex items-center gap-2 hover:text-primary transition"
-        >
-          <FontAwesomeIcon icon={faHeart} className="size-5" /> Wishlist
-        </a>
+        <CartButton session={session} productId={_id.toString()} />
+        <WishlistButton
+          session={session}
+          productId={_id?.toString()}
+          initialIsFavourite={checkIsFavourite(_id?.toString(), wishlist)}
+        />
       </div>
 
       <div className="flex gap-3 mt-4">

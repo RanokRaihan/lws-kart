@@ -7,11 +7,17 @@ const addressSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
-    required: true,
   },
-  street: {
+  email: {
     type: String,
     required: true,
+  },
+  address1: {
+    type: String,
+    required: true,
+  },
+  address2: {
+    type: String,
   },
   city: {
     type: String,
@@ -25,12 +31,11 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  phone: {
+  mobile: {
     type: String,
     required: true,
   },
 });
-
 const orderSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -58,6 +63,10 @@ const orderSchema = new mongoose.Schema({
     type: String,
     default: "Pending", // Pending, Paid, Cancelled
     enum: ["Pending", "Paid", "Cancelled"],
+  },
+  paymentMethod: {
+    type: String,
+    default: "COD",
   },
   shippingAddress: addressSchema,
   billingAddress: addressSchema,

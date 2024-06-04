@@ -1,15 +1,17 @@
-import {
-  faHeart,
-  faMagnifyingGlass,
-  faStar,
-} from "@fortawesome/free-solid-svg-icons";
+import { auth } from "@/auth";
+import { checkIsFavourite } from "@/lib/isFavourite";
+import { faMagnifyingGlass, faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import Link from "next/link";
+import AddToCart from "../AddToCart";
+import AddToFavouriteButton from "../AddToFavouriteButton";
 
-const ProductCard = ({ product }) => {
+const ProductCard = async ({ product, wishlist = [] }) => {
+  // get session
+  const session = await auth();
   // use product data to render ui
-  const { _id, name, price, discount, rating, ratedUser, images } =
+  const { id, name, price, discount, rating, ratedUser, images } =
     product || {};
   return (
     <div className="bg-white shadow rounded overflow-hidden group">
@@ -33,23 +35,21 @@ const ProductCard = ({ product }) => {
                     justify-center gap-2 opacity-0 group-hover:opacity-100 transition"
         >
           <Link
-            href={`/product/${_id?.toString()}`}
+            href={`/product/${id?.toString()}`}
             className="text-white text-lg w-9 h-8 rounded-full bg-primary flex items-center justify-center hover:bg-gray-800 transition"
             title="view product"
           >
             <FontAwesomeIcon icon={faMagnifyingGlass} className="size-5" />
           </Link>
-          <Link
-            href="#"
-            className="text-white text-lg w-9 h-8 rounded-full bg-primary flex items-center justify-center hover:bg-gray-800 transition"
-            title="add to wishlist"
-          >
-            <FontAwesomeIcon icon={faHeart} className="size-5" />
-          </Link>
+          <AddToFavouriteButton
+            session={session}
+            productId={id?.toString()}
+            initialIsFavourite={checkIsFavourite(id?.toString(), wishlist)}
+          />
         </div>
       </div>
       <div className="pt-4 pb-3 px-4">
-        <Link href={`/product/${_id?.toString()}`}>
+        <Link href={`/product/${id?.toString()}`}>
           <h4 className="uppercase font-medium text-xl mb-2 text-gray-800 hover:text-primary transition line-clamp-2 h-14">
             {name}
           </h4>
@@ -75,12 +75,7 @@ const ProductCard = ({ product }) => {
           <div className="text-xs text-gray-500 ml-3">({ratedUser})</div>
         </div>
       </div>
-      <Link
-        href="#"
-        className="block w-full py-1 text-center text-white bg-primary border border-primary rounded-b hover:bg-transparent hover:text-primary transition"
-      >
-        Add to cart
-      </Link>
+      <AddToCart session={session} productId={id?.toString()} />
     </div>
   );
 };

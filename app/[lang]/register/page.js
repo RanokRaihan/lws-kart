@@ -4,7 +4,8 @@ import LoginWithButtons from "@/components/ui/loginWith/LoginWithButtons";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-export default async function RegisterPage() {
+export default async function RegisterPage({ searchParams }) {
+  const { redirect_to } = searchParams;
   const session = await auth();
   if (session?.user) {
     redirect("/");
@@ -31,7 +32,10 @@ export default async function RegisterPage() {
 
         <p className="mt-4 text-center text-gray-600">
           Already have account?{" "}
-          <a href="/login" className="text-primary">
+          <a
+            href={`/login${redirect_to ? "?redirect_to=" + redirect_to : ""}`}
+            className="text-primary"
+          >
             Login now
           </a>
         </p>

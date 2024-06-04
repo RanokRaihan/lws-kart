@@ -1,7 +1,11 @@
+import { getCartItems } from "@/actions";
 import CartItem from "./CartItem";
 import CartSummary from "./CartSummary";
 
-const CartContainer = () => {
+const CartContainer = async () => {
+  const response = await getCartItems();
+  const { items: cartItems } = JSON.parse(response);
+
   return (
     <div className="container mx-auto p-4">
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -12,13 +16,14 @@ const CartContainer = () => {
           </div>
 
           <div className="space-y-4">
-            <CartItem />
-            <CartItem />
-            <CartItem />
-            <CartItem />
+            {cartItems && cartItems?.length > 0 ? (
+              cartItems?.map((item) => <CartItem key={item?.id} item={item} />)
+            ) : (
+              <h1>There is no product in cart</h1>
+            )}
           </div>
 
-          <CartSummary />
+          <CartSummary items={cartItems} />
         </div>
       </div>
     </div>

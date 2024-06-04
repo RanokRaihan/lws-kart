@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { transformMongoArray } from "@/lib/mongoTransform";
 import Category from "@/models/category.model";
 import Product from "@/models/product.model";
-import Wishlist from "@/models/wishlist.model";
 import dbConnect from "@/services/dbConnect";
 import mongoose from "mongoose";
 
@@ -49,7 +48,7 @@ export async function getRelatedProducts(productId) {
       .limit(4)
       .lean();
 
-    return relatedProducts;
+    return transformMongoArray(relatedProducts);
   } catch (error) {
     console.error("Error fetching related products:", error);
     return {
@@ -90,52 +89,143 @@ export async function getAllCategory() {
 
 //query products
 
+// export async function getProducts(queryParams) {
+//   const { category, minprice, maxprice, size, search } = queryParams || {};
+
+//   // Initialize an empty query object
+//   let query = {};
+
+//   // Filter by category (multiple categories separated by a plus sign)
+//   if (category) {
+//     const categories = category.split(" ");
+//     query.category = {
+//       $in: categories.map((cat) => new mongoose.Types.ObjectId(cat)),
+//     };
+//   }
+
+//   // Filter by price range
+//   if (minprice || maxprice) {
+//     query.price = {};
+//     if (minprice && parseFloat(minprice) !== NaN) {
+//       query.price.$gte = parseFloat(minprice);
+//     }
+
+//     if (maxprice && parseFloat(maxprice) !== NaN) {
+//       query.price.$lte = parseFloat(maxprice);
+//     }
+//   }
+
+//   // Filter by size (case-insensitive)
+//   if (size) {
+//     query.availableSize = {
+//       $elemMatch: { $regex: new RegExp(`^${size}$`, "i") },
+//     };
+//   }
+
+//   // Search by product name or description
+//   if (search) {
+//     const searchRegex = new RegExp(search, "i");
+//     query.$or = [{ name: searchRegex }, { description: searchRegex }];
+//   }
+
+//   try {
+//     //connect the database
+//     await dbConnect();
+//     // Execute the query
+//     const products = await Product.find(query).populate("category").lean();
+
+//     return { data: products };
+//   } catch (err) {
+//     return { error: err.message };
+//   }
+// }
+
+//get products
+
 export async function getProducts(queryParams) {
+  const session = await auth();
+
   const { category, minprice, maxprice, size, search } = queryParams || {};
 
-  // Initialize an empty query object
-  let query = {};
+  // Initialize the aggregation pipeline
+  let pipeline = [];
 
   // Filter by category (multiple categories separated by a plus sign)
   if (category) {
     const categories = category.split(" ");
-    query.category = {
-      $in: categories.map((cat) => new mongoose.Types.ObjectId(cat)),
-    };
+    pipeline.push({
+      $match: {
+        category: {
+          $in: categories.map((cat) => new mongoose.Types.ObjectId(cat)),
+        },
+      },
+    });
   }
 
-  // Filter by price range
+  // Calculate the discounted price and add it to the documents
+  pipeline.push({
+    $addFields: {
+      discountedPrice: {
+        $multiply: [
+          "$price",
+          { $subtract: [1, { $divide: ["$discount", 100] }] },
+        ],
+      },
+    },
+  });
+
+  // Filter by price range based on discounted price
   if (minprice || maxprice) {
-    query.price = {};
-    if (minprice && parseFloat(minprice) !== NaN) {
-      query.price.$gte = parseFloat(minprice);
+    let priceFilter = {};
+    if (minprice && !isNaN(parseFloat(minprice))) {
+      priceFilter.$gte = parseFloat(minprice);
     }
 
-    if (maxprice && parseFloat(maxprice) !== NaN) {
-      query.price.$lte = parseFloat(maxprice);
+    if (maxprice && !isNaN(parseFloat(maxprice))) {
+      priceFilter.$lte = parseFloat(maxprice);
     }
+
+    pipeline.push({
+      $match: {
+        discountedPrice: priceFilter,
+      },
+    });
   }
 
   // Filter by size (case-insensitive)
   if (size) {
-    query.availableSize = {
-      $elemMatch: { $regex: new RegExp(`^${size}$`, "i") },
-    };
+    pipeline.push({
+      $match: {
+        availableSize: {
+          $elemMatch: { $regex: new RegExp(`^${size}$`, "i") },
+        },
+      },
+    });
   }
 
   // Search by product name or description
   if (search) {
     const searchRegex = new RegExp(search, "i");
-    query.$or = [{ name: searchRegex }, { description: searchRegex }];
+    pipeline.push({
+      $match: {
+        $or: [{ name: searchRegex }, { description: searchRegex }],
+      },
+    });
   }
 
   try {
-    //connect the database
+    // Connect to the database
     await dbConnect();
-    // Execute the query
-    const products = await Product.find(query).populate("category").lean();
 
-    return { data: products };
+    // Execute the aggregation pipeline
+    const products = await Product.aggregate(pipeline).exec();
+
+    // Populate the category field
+    const productsWithCategory = await Product.populate(products, {
+      path: "category",
+    });
+
+    return { data: transformMongoArray(productsWithCategory) };
   } catch (err) {
     return { error: err.message };
   }
@@ -152,7 +242,7 @@ export async function getNewArrivals() {
       .limit(4)
       .populate("category")
       .lean();
-    return { data: newArrivals };
+    return { data: transformMongoArray(newArrivals) };
   } catch (err) {
     console.error("Error fetching new arrivals:", err);
     return { error: err.message };
@@ -170,31 +260,9 @@ export async function getTrendingProducts() {
       .limit(8)
       .populate("category")
       .lean();
-    return { data: trendingProduct };
+    return { data: transformMongoArray(trendingProduct) };
   } catch (err) {
     console.error("Error fetching trending:", err);
     return { error: err.message };
-  }
-}
-
-export async function getWishListItems() {
-  try {
-    const session = await auth();
-    if (session?.user) {
-      throw new Error("user is not logged in");
-    }
-    const wishlist = await Wishlist.findOne({
-      user: new mongoose.Types.ObjectId(
-        session?.user?._id || session?.user?.id
-      ),
-    })
-      .populate("items")
-      .lean();
-    if (!wishlist || wishlist?.items?.length === 0) {
-      return [];
-    }
-    return transformMongoArray(wishlist?.items);
-  } catch (error) {
-    return { error: error.message };
   }
 }

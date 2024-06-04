@@ -1,24 +1,35 @@
 import Image from "next/image";
+import Link from "next/link";
+import RemoveButton from "./RemoveButton";
 
-const CartItem = () => {
+const CartItem = ({ item }) => {
+  const { _id, name, price, discount, rating, ratedUser, images, description } =
+    item?.product || {};
+
+  console.log(_id);
   return (
     <div className="flex items-center space-x-4">
       <Image
         className="w-20 h-20 object-cover rounded"
-        src="https://via.placeholder.com/80"
+        src={images?.[0] || "https://via.placeholder.com/80"}
         alt="Product Image"
         width={80}
         height={80}
       />
       <div className="flex-1">
-        <h3 className="text-lg font-medium">Product Name 2</h3>
-        <p className="text-gray-600">Description of the product goes here.</p>
+        <h3 className="text-lg font-medium">
+          <Link href={`/product/${_id}`}>{name}</Link>
+        </h3>
+        <p className="text-gray-600">{description}</p>
         <div className="flex items-center space-x-2 mt-2">
-          <span className="text-gray-800">$49.99</span>
-          <span className="text-gray-600">x 2</span>
+          <span className="text-gray-800">
+            {" "}
+            ${Math.round((price - (price * discount) / 100) * 100) / 100}
+          </span>
+          <span className="text-gray-600">x {item?.quantity}</span>
         </div>
       </div>
-      <button className="text-red-500 hover:text-red-700">Remove</button>
+      <RemoveButton productId={_id} />
     </div>
   );
 };

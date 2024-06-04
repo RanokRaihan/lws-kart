@@ -1,12 +1,18 @@
 "use server";
 
-import { signIn, signOut } from "@/auth";
+import { auth, signIn, signOut } from "@/auth";
+import { transformMongoArray } from "@/lib/mongoTransform";
+import Cart from "@/models/cart.model";
 import Category from "@/models/category.model";
+import Order from "@/models/order.model";
+import Product from "@/models/product.model";
 import User from "@/models/user.model";
+import Wishlist from "@/models/wishlist.model";
 import RegisterSchema from "@/schema/signUpSchema";
 import dbConnect from "@/services/dbConnect";
 import { v2 as cloudinary } from "cloudinary";
-import { revalidatePath } from "next/cache";
+import mongoose from "mongoose";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 // configure cloudinary for image upload
 cloudinary.config({
@@ -15,11 +21,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function signInWithGoogle() {
-  await signIn("google", { callbackUrl: "http://localhost:3000" });
+export async function signInWithGoogle(formData) {
+  const redirect = formData.get("redirect");
+
+  await signIn("google", {
+    callbackUrl: `http://localhost:3000/${redirect || ""}`,
+  });
 }
 export async function signInWithGithub() {
-  await signIn("github", { callbackUrl: "http://localhost:3000" });
+  const redirect = formData.get("redirect");
+  await signIn("github", {
+    callbackUrl: `http://localhost:3000/${redirect || ""}`,
+  });
 }
 export async function signOutAction() {
   await signOut({ callbackUrl: "http://localhost:3000" });
@@ -80,7 +93,7 @@ export async function SignUpAction(prevState, formData) {
     if (result.error) {
       throw new Error(result.error);
     }
-    return result;
+    return { data: result };
   } catch (error) {
     return {
       error: {
@@ -137,7 +150,6 @@ export async function updateUser(formData) {
     return !isNaN(date.getTime()) ? date : undefined;
   };
   const { id, name, mobile, image, dob } = Object.fromEntries(formData);
-  console.log({ id, name, mobile, image, dob });
 
   let imageLink = undefined;
   try {
@@ -211,5 +223,286 @@ export async function updateUserAddress(formData) {
     }
   } catch (error) {
     return { error: error.message };
+  }
+}
+
+export async function getUserWishList() {
+  revalidateTag("wishlist");
+  try {
+    await dbConnect();
+    const session = await auth();
+    if (!session?.user) {
+      throw new Error("User not logged in");
+    }
+    const wishlist = await Wishlist.findOne({
+      user: new mongoose.Types.ObjectId(
+        session?.user?.id || session?.user?._id
+      ),
+    })
+      .populate("items")
+      .lean();
+    if (!wishlist || wishlist?.items?.length === 0) {
+      return [];
+    }
+    return { wishlistItems: transformMongoArray(wishlist?.items) };
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
+// add or remove data from favourite
+export async function toggleWishList(userId, productId) {
+  try {
+    //connect database
+    await dbConnect();
+    // Find the wishlist for the given user
+    let wishlist = await Wishlist.findOne({ user: userId });
+
+    // If no wishlist exists for the user, create one
+    if (!wishlist) {
+      wishlist = new Wishlist({ user: userId, items: [] });
+    }
+
+    // Check if the product is already in the wishlist
+    const itemIndex = wishlist.items.indexOf(productId);
+
+    if (itemIndex === -1) {
+      // If the product is not in the wishlist, add it
+      wishlist.items.push(productId);
+    } else {
+      // If the product is already in the wishlist, remove it
+      wishlist.items.splice(itemIndex, 1);
+    }
+
+    // Save the updated wishlist
+    await wishlist.save();
+    return JSON.stringify({
+      success: true,
+      task: itemIndex === -1 ? "add" : "remove",
+      message:
+        itemIndex === -1
+          ? "Product added to wishlist"
+          : "Product removed from wishlist",
+      wishlist,
+    });
+  } catch (error) {
+    return JSON.stringify({
+      success: false,
+      message: "An error occurred while toggling the wishlist",
+      error: error.message,
+    });
+  }
+}
+
+//add product to  cart
+
+export async function addProductToCart(productId, quantity = 1) {
+  try {
+    await dbConnect();
+    const session = await auth();
+    if (!session?.user) {
+      throw new Error("User not authenticated");
+    }
+
+    const userId = session.user.id || session?.user?._id;
+
+    // Find the user's cart or create a new one
+    let cart = await Cart.findOne({ user: userId }).populate("items.product");
+
+    if (!cart) {
+      cart = new Cart({ user: userId, items: [] });
+    }
+
+    // Find the product to add
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    // Check if the product is already in the cart
+    const cartItem = cart.items.find((item) =>
+      item.product._id.equals(productId)
+    );
+    if (cartItem) {
+      //throw an error
+      throw new Error("Item already in the cart");
+    } else {
+      // Add new product to the cart
+      cart.items.push({ product: productId, quantity });
+    }
+
+    // Save the cart
+    await cart.save();
+    revalidatePath("/[slug]/cart", "page");
+    return JSON.stringify({ success: true, message: "Product added to cart" });
+  } catch (error) {
+    return JSON.stringify({ success: false, error: error.message });
+  }
+}
+
+// delete product from cart
+
+export async function removeProductFromCart(productId) {
+  try {
+    await dbConnect();
+    const session = await auth();
+    if (!session?.user) {
+      throw new Error("User not authenticated");
+    }
+
+    const userId = session.user.id || session?.user?._id;
+
+    // Find the user's cart
+    let cart = await Cart.findOne({ user: userId }).populate("items.product");
+
+    if (!cart) {
+      throw new Error("Cart not found");
+    }
+
+    // Find the product index in the cart
+    const itemIndex = cart.items.findIndex((item) =>
+      item.product._id.equals(productId)
+    );
+    console.log({ toDelete: productId });
+
+    if (itemIndex === -1) {
+      throw new Error("Product not found in cart");
+    }
+
+    // Remove the item from the cart
+    cart.items.splice(itemIndex, 1);
+
+    // Save the updated cart
+    await cart.save();
+    revalidatePath("/[slug]/cart", "page");
+    return JSON.stringify({ success: true, message: "item removed from cart" });
+  } catch (error) {
+    return JSON.stringify({ success: false, error: error.message });
+  }
+}
+
+// clear the cart
+
+export async function clearCart() {
+  await dbConnect();
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      throw new Error("User not authenticated");
+    }
+
+    const userId = session.user.id || session?.user?._id;
+
+    // Find the user's cart
+    let cart = await Cart.findOne({ user: userId });
+
+    if (!cart) {
+      throw new Error("Cart not found");
+    }
+
+    // Clear all items from the cart
+    cart.items = [];
+
+    // Save the updated cart
+    await cart.save();
+
+    // Return the updated cart object as a JSON string
+    return JSON.stringify({ success: true, cart });
+  } catch (error) {
+    // Return the error object as a JSON string
+    return JSON.stringify({ success: false, error: error.message });
+  }
+}
+
+//get all the item in cart
+
+export async function getCartItems() {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      throw new Error("User not authenticated");
+    }
+
+    const userId = session.user.id;
+
+    // Find the user's cart
+    let cart = await Cart.findOne({ user: userId })
+      .populate("items.product")
+      .lean();
+
+    if (!cart) {
+      // If cart not found, create a new one
+      cart = new Cart({ user: userId, items: [] });
+      await cart.save();
+      return JSON.stringify({ success: true, items: [] });
+    }
+
+    // Return the cart items as a JSON string
+    return JSON.stringify({
+      success: true,
+      items: transformMongoArray(cart.items),
+    });
+  } catch (error) {
+    // Return the error object as a JSON string
+    return JSON.stringify({ success: false, error: error.message });
+  }
+}
+
+//place a order
+export async function placeOrder(address) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      throw new Error("User not authenticated!");
+    }
+
+    await dbConnect();
+
+    // Find the user's cart
+    const userId = session.user.id || session?.user?._id;
+    const cart = await Cart.findOne({ user: userId }).populate("items.product");
+
+    if (!cart || cart.items.length === 0) {
+      throw new Error("Cart is empty");
+    }
+
+    // Calculate the total amount
+    const totalAmount = cart.items.reduce((total, cartItem) => {
+      const { price, discount } = cartItem.product;
+      const discountAmount = (price * discount) / 100;
+      const discountedPrice = price - discountAmount;
+      const totalItemPrice = discountedPrice * cartItem.quantity;
+      return total + totalItemPrice;
+    }, 0);
+
+    // Create a new order
+    const newOrder = new Order({
+      user: userId,
+      products: cart.items.map((item) => ({
+        product: item.product._id,
+        quantity: item.quantity,
+      })),
+      totalAmount: totalAmount,
+      status: "Pending",
+      paymentMethod: "COD", // or whatever method you prefer
+      shippingAddress: address,
+      billingAddress: address,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await newOrder.save();
+
+    // Clear the user's cart
+    cart.items = [];
+    await cart.save();
+
+    return JSON.stringify({
+      success: true,
+      message: "order placed",
+      order: newOrder?._id,
+    });
+  } catch (error) {
+    return JSON.stringify({ success: false, error: error.message });
   }
 }

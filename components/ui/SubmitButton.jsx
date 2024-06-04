@@ -2,7 +2,7 @@
 import { useFormStatus } from "react-dom";
 const SubmitButton = ({ className, children }) => {
   const { pending } = useFormStatus();
-  console.log(pending);
+
   return (
     <button
       type="submit"

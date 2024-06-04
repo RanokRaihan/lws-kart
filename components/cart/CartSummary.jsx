@@ -1,11 +1,13 @@
+import { calculateTotalCartPrice } from "@/lib/cartTotal";
 import Link from "next/link";
-
-const CartSummary = () => {
+const CartSummary = ({ items }) => {
   return (
     <div className="border-t pt-4 mt-4">
       <div className="flex justify-between items-center">
         <span className="text-lg font-medium">Total</span>
-        <span className="text-xl font-semibold">$149.95</span>
+        <span className="text-xl font-semibold">
+          ${calculateTotalCartPrice(items)}
+        </span>
       </div>
       <Link
         href="/checkout"

@@ -13,6 +13,7 @@ const Sidebar = async () => {
         <PriceFilter />
         <SizeFilter />
         <ClearButton />
+        {/* <Link href="/shop?rev/alidate=true">revalidate</Link> */}
       </div>
     </div>
   );

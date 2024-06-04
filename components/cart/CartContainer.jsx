@@ -12,7 +12,9 @@ const CartContainer = async () => {
         <div className="px-6 py-4">
           <div className="flex justify-between items-center border-b pb-4 mb-4">
             <h2 className="text-xl font-semibold">Cart Summary</h2>
-            <span className="text-gray-600">3 items</span>
+            <span className="text-gray-600">
+              {cartItems?.length || 0} items
+            </span>
           </div>
 
           <div className="space-y-4">

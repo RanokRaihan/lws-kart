@@ -503,3 +503,9 @@ export async function placeOrder(address) {
     return JSON.stringify({ success: false, error: error.message });
   }
 }
+
+// clear search filter
+export async function clearFilter() {
+  revalidatePath("/[slug]/shop", "page");
+  return JSON.stringify({ success: true });
+}

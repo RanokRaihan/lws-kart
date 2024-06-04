@@ -1,6 +1,6 @@
 import { getAllCategory } from "@/database/productQuery";
-import Link from "next/link";
 import CategoryFilter from "./CategoryFilter";
+import ClearButton from "./ClearButton";
 import PriceFilter from "./PriceFilter";
 import SizeFilter from "./SizeFilter";
 
@@ -12,12 +12,7 @@ const Sidebar = async () => {
         <CategoryFilter categories={categories} />
         <PriceFilter />
         <SizeFilter />
-        <Link
-          className="bg-red-500 text-white px-4 py-2 rounded-md inline-block"
-          href="/shop"
-        >
-          Clear filter
-        </Link>
+        <ClearButton />
       </div>
     </div>
   );

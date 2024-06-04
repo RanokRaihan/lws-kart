@@ -1,5 +1,6 @@
 "use client";
 
+import { clearFilter } from "@/actions";
 import { usePathname, useRouter } from "next/navigation";
 
 const ClearButton = () => {

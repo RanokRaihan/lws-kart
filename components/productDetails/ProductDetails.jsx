@@ -1,14 +1,9 @@
 import { getUserWishList } from "@/actions";
 import { auth } from "@/auth";
 import { checkIsFavourite } from "@/lib/isFavourite";
-import {
-  faFacebookF,
-  faInstagram,
-  faTwitter,
-} from "@fortawesome/free-brands-svg-icons";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import StarRating from "../ui/StarRating";
 import CartButton from "./CartButton";
+import SocialMediaShare from "./SocialMediaShare";
 import Stock from "./Stock";
 import WishlistButton from "./WishlistButton";
 
@@ -32,13 +27,7 @@ const ProductDetails = async ({ product }) => {
     <div>
       <h2 className="text-3xl font-medium uppercase mb-2">{name}</h2>
       <div className="flex items-center mb-4">
-        <div className="flex gap-1 text-sm text-yellow-400">
-          <FontAwesomeIcon icon={faStar} className="size-4" />
-          <FontAwesomeIcon icon={faStar} className="size-4" />
-          <FontAwesomeIcon icon={faStar} className="size-4" />
-          <FontAwesomeIcon icon={faStar} className="size-4" />
-          <FontAwesomeIcon icon={faStar} className="size-4" />
-        </div>
+        <StarRating rating={rating} />
         <div className="text-xs text-gray-500 ml-3">({ratedUser} Reviews)</div>
       </div>
       <div className="space-y-2">
@@ -93,26 +82,7 @@ const ProductDetails = async ({ product }) => {
         />
       </div>
 
-      <div className="flex gap-3 mt-4">
-        <a
-          href="#"
-          className="text-gray-400 hover:text-gray-500 h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-        >
-          <FontAwesomeIcon icon={faFacebookF} className="size-5" />
-        </a>
-        <a
-          href="#"
-          className="text-gray-400 hover:text-gray-500 h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-        >
-          <FontAwesomeIcon icon={faTwitter} className="size-5" />
-        </a>
-        <a
-          href="#"
-          className="text-gray-400 hover:text-gray-500 h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-        >
-          <FontAwesomeIcon icon={faInstagram} className="size-5" />
-        </a>
-      </div>
+      <SocialMediaShare />
     </div>
   );
 };

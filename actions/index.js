@@ -361,7 +361,6 @@ export async function removeProductFromCart(productId) {
     const itemIndex = cart.items.findIndex((item) =>
       item.product._id.equals(productId)
     );
-    console.log({ toDelete: productId });
 
     if (itemIndex === -1) {
       throw new Error("Product not found in cart");

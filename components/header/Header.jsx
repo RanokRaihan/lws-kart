@@ -14,7 +14,7 @@ const Header = async () => {
   const { wishlistItems } = await getUserWishList();
   const response = await getCartItems();
   const { items: cartItems } = JSON.parse(response);
-  console.log({ cartItems });
+
   return (
     <header className="py-4 shadow-sm bg-white">
       <div className="container flex items-center justify-between">

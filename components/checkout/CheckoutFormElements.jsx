@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 const CheckoutFormElements = ({ address }) => {
-  console.log({ address });
   const [serverError, setServerError] = useState("");
   const router = useRouter();
 

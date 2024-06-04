@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "LWS Cart | find your favourite product",
-  description: "ecomerce website",
+  description: "ecomerce website for fashion brand shoping",
 };
 
 export default function RootLayout({ children }) {

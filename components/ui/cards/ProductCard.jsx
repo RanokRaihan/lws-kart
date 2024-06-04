@@ -1,11 +1,12 @@
 import { auth } from "@/auth";
 import { checkIsFavourite } from "@/lib/isFavourite";
-import { faMagnifyingGlass, faStar } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import Link from "next/link";
 import AddToCart from "../AddToCart";
 import AddToFavouriteButton from "../AddToFavouriteButton";
+import StarRating from "../StarRating";
 
 const ProductCard = async ({ product, wishlist = [] }) => {
   // get session
@@ -61,17 +62,7 @@ const ProductCard = async ({ product, wishlist = [] }) => {
           <p className="text-sm text-gray-400 line-through">${price}</p>
         </div>
         <div className="flex items-center">
-          <div className="flex gap-1 text-sm text-yellow-400">
-            <span>
-              <FontAwesomeIcon icon={faStar} className="size-4" />
-            </span>
-            <span>
-              <FontAwesomeIcon icon={faStar} className="size-4" />
-            </span>
-            <span>
-              <FontAwesomeIcon icon={faStar} className="size-4" />
-            </span>
-          </div>
+          <StarRating rating={rating} />
           <div className="text-xs text-gray-500 ml-3">({ratedUser})</div>
         </div>
       </div>

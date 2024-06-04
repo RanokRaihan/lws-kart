@@ -6,7 +6,6 @@ const CartItem = ({ item }) => {
   const { _id, name, price, discount, rating, ratedUser, images, description } =
     item?.product || {};
 
-  console.log(_id);
   return (
     <div className="flex items-center space-x-4">
       <Image

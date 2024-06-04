@@ -21,17 +21,14 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function signInWithGoogle(formData) {
-  const redirect = formData.get("redirect");
-
+export async function signInWithGoogle() {
   await signIn("google", {
-    callbackUrl: `http://localhost:3000/${redirect || ""}`,
+    callbackUrl: `http://localhost:3000/`,
   });
 }
 export async function signInWithGithub() {
-  const redirect = formData.get("redirect");
   await signIn("github", {
-    callbackUrl: `http://localhost:3000/${redirect || ""}`,
+    callbackUrl: `http://localhost:3000/`,
   });
 }
 export async function signOutAction() {
